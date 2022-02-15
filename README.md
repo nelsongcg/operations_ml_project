@@ -1,17 +1,38 @@
-I have chosen the notebook instance ml.t2.medium because of its low cost of operating, which should be enough for the purposes of this project 
+# Operations ML project
 
 
-single instance - pytorch-inference-2022-02-14-08-01-59-076
+This project aims to outline some deployment considerations for a production grade image classification project.
+
+There are different alternatives for the deployment of the model in AWS.
+
+## SageMaker:
+
+For this project it was created a notebook instance of the type ml.t2.medium due to its low cost of operation, which should be enough for the purposes of this project. The instance can be seen in the image below.
+
+![ScreenShot](images/notebook_instance_specs.png)
 
 
-I have chosen this EC2 machine given its cost
-Deep Learning AMI GPU PyTorch 1.10.0 (Amazon Linux 2)
+## EC2
 
-The code in EC2 has to handle many tasks that are "invisible" when you use SageMaker. For example, data can be accessed on S3 by the estimator, also we can retrieve the best performing model more easily.
+As an alternative EC2 machines can be used to train and create the the model. For this case an t2.micro instance with  Deep Learning AMI GPU PyTorch 1.10.0 (Amazon Linux 2) was chosen, given that it provides low cost to the operations and the libraries and images we would need. The model is saved under TrainedModels folder as the image below shows.
 
-The lambda function gets the  data sent from event and uses the endpoint deployed to get a prediction. Returns the result in a json format along with other information
+![ScreenShot](images/model_saved_EC2.png)
 
 
+## SageMaker vs EC2
+The deployment in EC2 has to handle many tasks that are "invisible" when you use SageMaker. For example, data can be accessed on S3 by the estimator. It is also possible to retrieve the best performing model more easily directly.
+
+
+
+
+
+## Lambda
+
+The lambda function received the  data sent from event and uses the endpoint deployed to get a prediction. Returns the result in a json format along with other information. 
+
+An example of what a response looks like is below:
+
+![ScreenShot](images/lambda_result.png)
 
 Response
 {
@@ -26,7 +47,14 @@ Response
 }
 
 
-There are many roles created in the past from previous projects, there, there is a need for a complete review of it
+## Secutiry considearions
 
+There are many roles created in the past from previous projects, there is a need for a complete review of it. Particularly those that have 'Full access' attached, an improbement would be to be more specific what is needed.
 
-REVIEW AUTO SCALE FOR JUSTIFICATIONS
+![ScreenShot](images/roles_1.png)
+![ScreenShot](images/roles_2.png)
+![ScreenShot](images/roles_3.png)
+
+## Auto scaling and concurrency
+
+For this application it was provisioned 3 concurrency requests in order to avoid  delays during high traffic periods. On top of that it was added autoscaling, with a minumum of 1 and a maximum of 3, with both  scale in/out cool down of 30 seconds. Additionaly we target 10 simultaneous requests to be the target for triggering the scaling.
