@@ -12,9 +12,17 @@ For this project it was created a notebook instance of the type ml.t2.medium due
 ![ScreenShot](images/notebook_instance_specs.png)
 
 
+An S3 bucket is used to store the data necessary for training, testing and validation
+
+![ScreenShot](images/s3_bucket.png)
+
 ## EC2
 
-As an alternative EC2 machines can be used to train and create the the model. For this case an t2.micro instance with  Deep Learning AMI GPU PyTorch 1.10.0 (Amazon Linux 2) was chosen, given that it provides low cost to the operations and the libraries and images we would need. The model is saved under TrainedModels folder as the image below shows.
+As an alternative EC2 machines can be used to train and create the the model. For this case an t2.micro instance with  Deep Learning AMI GPU PyTorch 1.10.0 (Amazon Linux 2) was chosen, given that it provides low cost to the operations and the libraries and images we would need. This particular instance is composed of 1 vCPUs, 1.0  of RAM (GiB) and ( at the time of this writing) On-Demand Price/hr of $0.0116.
+
+The model is saved under TrainedModels folder as the image below shows.
+
+![ScreenShot](images/EC2_screenshot.png)
 
 ![ScreenShot](images/model_saved_EC2.png)
 
@@ -51,10 +59,18 @@ Response
 
 There are many roles created in the past from previous projects, there is a need for a complete review of it. Particularly those that have 'Full access' attached, an improbement would be to be more specific what is needed.
 
+For instance the role operations-ml-project (screenshot below), has a Full Access for Sagemaker policy attached and it is used for the lambda function, it would be better to add a policy that allows interaction only with the endpoint and nothing beyond that.
+
+For simplicity, during the project all resources used the same role that has the same policies attached to it, it would be better to have them separately.
+
 ![ScreenShot](images/roles_1.png)
 ![ScreenShot](images/roles_2.png)
 ![ScreenShot](images/roles_3.png)
 
 ## Auto scaling and concurrency
 
-For this application it was provisioned 3 concurrency requests in order to avoid  delays during high traffic periods. On top of that it was added autoscaling, with a minumum of 1 and a maximum of 3, with both  scale in/out cool down of 30 seconds. Additionaly we target 10 simultaneous requests to be the target for triggering the scaling.
+For this application it was provisioned 3 concurrency requests in order to avoid  delays during high traffic periods, it means that it can get 3 simulaneous requests, at the time of this writing it costs an additional $5.41 per month. On top of that it was added autoscaling, with a minumum of 1 and a maximum of 3, with both  scale in/out cool down of 30 seconds. Additionaly we target 10 simultaneous requests to be the target for triggering the scaling.
+
+![ScreenShot](images/concurrency.png)
+![ScreenShot](images/autoscaling.png)
+
